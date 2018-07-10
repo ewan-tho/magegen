@@ -2,9 +2,8 @@
 
 
 // @todo: put these into proper packages and use composer
-// require('./vendor/autoload.php');
-require('../magedbgen/DbGen.php');
-require('../mageinterfacegen/InterfaceGen.php');
+
+require('DbGen.php');
 require('MageGen.php');
 
 if (php_sapi_name() != 'cli') {

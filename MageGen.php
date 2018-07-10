@@ -2,9 +2,6 @@
 
 namespace MageGen;
 
-use MageGen\DbGen;
-use MageGen\InterfaceGen;
-
 class MageGen
 {
     const TAB                 = '    ';
@@ -39,9 +36,6 @@ class MageGen
     /** @var DbGen */
     protected $dbGen;
 
-    /** @var InterfaceGen */
-    protected $interfaceGen;
-
     /**
      * MageGen constructor.
      *
@@ -71,8 +65,7 @@ class MageGen
         $this->moduleName = $moduleName;
         $this->vendor     = $vendor;
 
-        $this->dbGen        = new DbGen();
-        $this->interfaceGen = new InterfaceGen();
+        $this->dbGen = new DbGen();
     }
 
     /**
@@ -254,10 +247,10 @@ class MageGen
         $interfaceNamespace = $this->vendor . '\\' . $this->moduleName . '\\' . str_replace('/', '\\', self::INTERFACE_PATH);
         $modelNamespace     = $this->vendor . '\\' . $this->moduleName . '\\' . str_replace('/', '\\', self::MODEL_PATH);
 
-        $interfaceTemplate         = $this->loadTemplate('Interface');
-        $interfaceTemplate         = str_replace('{{NAMESPACE}}', $interfaceNamespace, $interfaceTemplate);
-        $interfaceTemplate         = str_replace('{{VENDOR}}', $this->vendor, $interfaceTemplate);
-        $interfaceTemplate         = str_replace('{{MODULE_NAME}}', $this->moduleName, $interfaceTemplate);
+        $interfaceTemplate = $this->loadTemplate('Interface');
+        $interfaceTemplate = str_replace('{{NAMESPACE}}', $interfaceNamespace, $interfaceTemplate);
+        $interfaceTemplate = str_replace('{{VENDOR}}', $this->vendor, $interfaceTemplate);
+        $interfaceTemplate = str_replace('{{MODULE_NAME}}', $this->moduleName, $interfaceTemplate);
 
         foreach ($this->interfaceFunctions as $interfaceName => $interfaceFunctions) {
             $constants = [];
@@ -301,11 +294,10 @@ class MageGen
 
         if (!$replaceId) {
             $functionName = $this->convertToCamelCase($fieldData['field']);
-            $itemName     = $this->convertToSnakeCase($this->filterName($fieldData['field']));
         } else {
             $functionName = 'Id';
-            $itemName     = 'id';
         }
+        $itemName = $this->convertToSnakeCase($this->filterName($fieldData['field']));
 
         $keyName                   = strtoupper($itemName);
         $interfaceFunctionTemplate = $this->loadTemplate('InterfaceFunction');
@@ -339,12 +331,11 @@ class MageGen
 
         if (!$replaceId) {
             $functionName = $this->convertToCamelCase($fieldData['field']);
-            $itemName     = $this->convertToSnakeCase($this->filterName($fieldData['field']));
         } else {
             $functionName = 'Id';
-            $itemName     = 'id';
         }
 
+        $itemName              = $this->convertToSnakeCase($this->filterName($fieldData['field']));
         $keyName               = strtoupper($itemName);
         $modelFunctionTemplate = $this->loadTemplate('ModelFunction');
         $argument              = '$' . $this->convertToCamelCase($functionName, true);
@@ -356,8 +347,8 @@ class MageGen
         $modelFunctionContent  = str_replace('{{ARGUMENT}}', $argument, $modelFunctionContent);
 
         if (!$replaceId) {
-            $this->modelFunctions[$modelName][$functionName]  = $modelFunctionContent;
-            $this->modelInterfaces[$modelName] = $interfaceName;
+            $this->modelFunctions[$modelName][$functionName] = $modelFunctionContent;
+            $this->modelInterfaces[$modelName]               = $interfaceName;
         } else {
             if (isset($this->modelFunctions[$modelName][$functionName])) {
                 unset($this->modelFunctions[$modelName][$functionName]);
