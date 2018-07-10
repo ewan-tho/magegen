@@ -181,7 +181,7 @@ class DbGen
                             $function[] = $tab3 . '[],';
                         } else {
                             $function[] = $tab3 . '[';
-                            $function[] = $tab3 . implode(",\n$tab4", $columnOptions);
+                            $function[] = $tab4 . implode(",\n$tab4", $columnOptions);
                             $function[] = $tab3 . '],';
                         }
                         $function[] = $tab3 . (empty($columnComment) ? '\'\'' : '\'' . $columnComment . '\'');

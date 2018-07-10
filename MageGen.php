@@ -193,7 +193,7 @@ class MageGen
         }
 
         $fileTemplate = str_replace('{{FUNCTION_CALLS}}', implode("\n", $functionCalls), $fileTemplate);
-        $fileTemplate = str_replace('{{FUNCTIONS}}', implode("\n", $functions), $fileTemplate);
+        $fileTemplate = str_replace('{{FUNCTIONS}}', trim(implode("\n", $functions)), $fileTemplate);
 
         file_put_contents($installSchemaFile, $fileTemplate);
 
