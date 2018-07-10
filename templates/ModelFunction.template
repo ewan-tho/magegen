@@ -1,0 +1,15 @@
+    /**
+     * @return {{RETURNS}}
+     */
+    public function get{{FUNCTION_NAME}}() {
+        return $this->getData(self::{{KEY_NAME}});
+    }
+
+    /**
+     * @param {{PARAMS}}
+     *
+     * @return $this
+     */
+    public function set{{FUNCTION_NAME}}({{ARGUMENTS}}) {
+        return $this->setData(self::{{KEY_NAME}}, {{ARGUMENT}});
+    }

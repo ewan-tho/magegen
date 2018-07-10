@@ -1,0 +1,15 @@
+<?php
+
+namespace {{NAMESPACE}};
+
+use {{INTERFACE_PATH}};
+
+/**
+ * Class {{MODEL}}
+ *
+ * @package {{VENDOR}}\{{MODULE_NAME}}
+ */
+class {{MODEL}} extends \Magento\Framework\DataObject implements {{INTERFACE_NAME}}
+{
+    {{FUNCTIONS}}
+}

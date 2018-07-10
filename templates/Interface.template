@@ -1,0 +1,15 @@
+<?php
+
+namespace {{NAMESPACE}};
+
+/**
+ * Interface {{INTERFACE_NAME}}
+ *
+ * @package {{VENDOR}}\{{MODULE_NAME}}
+ */
+interface {{INTERFACE_NAME}} extends \Magento\Framework\Api\ExtensibleDataInterface
+{
+    {{CONSTANTS}}
+
+    {{FUNCTIONS}}
+}
