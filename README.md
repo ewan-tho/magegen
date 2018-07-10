@@ -11,12 +11,22 @@ These files will be generated using a fairly vanilla directory structure under t
 
 The following arguments are optional:
 
-|Argument|Description|
-|---|---|
-`--module-name=My_Module` | Set the module name to `My_Module` so the input isn't required.
-`--vendor=Vendor` | Set the vendor to `Vendor` so the input isn't required.
-`--destination=destination/directory` | Force the destination directory to `./destination/directory`. Must be relative and **will** overwrite files.
-`--no-verify` | Skip the confirmation before beginning.
+`--module-name=My_Module`
+
+Set the module name to `My_Module` so the input isn't required.
+
+`--vendor=Vendor`
+
+Set the vendor to `Vendor` so the input isn't required.
+
+
+`--destination=destination/directory`
+
+Force the destination directory to `./destination/directory`. Must be relative and **will** overwrite files.
+
+`--no-verify`
+
+Skip the confirmation before beginning.
 
 If they aren't provided at the command line, the `module-name` and `vendor` will be prompted for. This is used to generate your namespace `Vendor\Module_Name` and also to try and detect the interface and model names to use for your tables.
 
