@@ -15,7 +15,7 @@ class DbGen
         'varchar'   => 'TYPE_TEXT',
         'varbinary' => 'TYPE_VARBINARY'
     ];
-    const VAR_TYPES = [
+    const VAR_TYPES  = [
         '_default'  => 'string',
         'int'       => 'int',
         'tinyint'   => 'int',
@@ -45,6 +45,7 @@ class DbGen
         $tab2      = str_repeat(MageGen::TAB, 2);
         $tab3      = str_repeat(MageGen::TAB, 3);
         $tab4      = str_repeat(MageGen::TAB, 4);
+        $tab5      = str_repeat(MageGen::TAB, 5);
         $function  = $functions = $functionNames = $tables = $fields = [];
 
         $defaults = [
@@ -167,7 +168,7 @@ class DbGen
                         if (!empty($primaryKey) && $primaryKey == $columnName) {
                             $columnOptions[]      = '\'primary\' => true';
                             $fieldData['primary'] = true;
-                            if (trim(strtolower($matches[7][$key])) == 'auto_increment') {
+                            if (strpos(strtolower($matches[7][$key]), 'auto_increment') !== false) {
                                 $columnOptions[] = '\'identity\' => true';
                             }
                         }
@@ -181,7 +182,7 @@ class DbGen
                             $function[] = $tab3 . '[],';
                         } else {
                             $function[] = $tab3 . '[';
-                            $function[] = $tab4 . implode(",\n$tab4", $columnOptions);
+                            $function[] = $tab4 . implode(",\n$tab5", $columnOptions);
                             $function[] = $tab3 . '],';
                         }
                         $function[] = $tab3 . (empty($columnComment) ? '\'\'' : '\'' . $columnComment . '\'');
