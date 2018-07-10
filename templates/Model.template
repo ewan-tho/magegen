@@ -11,5 +11,10 @@ use {{INTERFACE_PATH}};
  */
 class {{MODEL}} extends \Magento\Framework\Model\AbstractModel implements {{INTERFACE_NAME}}
 {
+    protected function _construct()
+    {
+        $this->_init({{RESOURCE_MODEL}}::class);
+    }
+
     {{FUNCTIONS}}
 }

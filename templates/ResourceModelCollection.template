@@ -1,0 +1,16 @@
+<?php
+
+namespace {{NAMESPACE}};
+
+use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
+use {{MODEL_PATH}};
+use {{RESOURCE_MODEL_PATH}} as {{MODEL}}ResourceModel;
+
+class Collection extends AbstractCollection
+{
+    protected function _construct()
+    {
+        $this->_init({{MODEL}}::class, {{MODEL}}ResourceModel::class);
+        $this->_setIdFieldName({{MODEL}}ResourceModel::PRIMARY_KEY);
+    }
+}

@@ -8,6 +8,7 @@ class MageGen
     const INSTALL_SCHEMA_PATH = 'Setup';
     const INTERFACE_PATH      = 'Api/Data';
     const MODEL_PATH          = 'Model';
+    const RESOURCE_MODEL_PATH = 'Model/ResourceModel';
 
     protected $filePath;
 
@@ -151,6 +152,7 @@ class MageGen
             explode(DIRECTORY_SEPARATOR, $this->destination . DIRECTORY_SEPARATOR . self::INSTALL_SCHEMA_PATH),
             explode(DIRECTORY_SEPARATOR, $this->destination . DIRECTORY_SEPARATOR . self::MODEL_PATH),
             explode(DIRECTORY_SEPARATOR, $this->destination . DIRECTORY_SEPARATOR . self::INTERFACE_PATH),
+            explode(DIRECTORY_SEPARATOR, $this->destination . DIRECTORY_SEPARATOR . self::RESOURCE_MODEL_PATH),
         ];
         foreach ($paths as $path) {
             $fullPath = '.';
@@ -220,6 +222,7 @@ class MageGen
             $modelFunctions = [];
 
             $primaryKey = [];
+
             foreach ($table['data'] as $item) {
 
                 $this->buildInterfaceFunction($interfaceName, $item);
@@ -236,6 +239,8 @@ class MageGen
                     $this->buildModelFunction($modelName, $interfaceName, $primaryKey, true);
                 }
             }
+
+            $this->buildResourceModel($modelName, empty($primaryKey) ? 'id' : $primaryKey['field'], $table['table']);
         }
 
         return true;
@@ -270,10 +275,12 @@ class MageGen
         $modelTemplate = str_replace('{{NAMESPACE}}', $modelNamespace, $modelTemplate);
         $modelTemplate = str_replace('{{VENDOR}}', $this->vendor, $modelTemplate);
         $modelTemplate = str_replace('{{MODULE_NAME}}', $this->moduleName, $modelTemplate);
+        $resourceModel = '\\' . $this->vendor . '\\' . $this->moduleName . '\\' . str_replace('/', '\\', self::RESOURCE_MODEL_PATH) . '\\';
 
         foreach ($this->modelFunctions as $modelName => $modelFunctions) {
             $interfaceName = $this->modelInterfaces[$modelName];
             $modelContent  = str_replace('{{MODEL}}', $modelName, $modelTemplate);
+            $modelContent  = str_replace('{{RESOURCE_MODEL}}', $resourceModel . $modelName, $modelContent);
             $modelContent  = str_replace('{{INTERFACE_NAME}}', $interfaceName, $modelContent);
             $modelContent  = str_replace('{{INTERFACE_PATH}}', $interfaceNamespace . '\\' . $interfaceName, $modelContent);
             $modelContent  = str_replace('{{FUNCTIONS}}', trim(implode("\n" . str_repeat(self::TAB, 1), $modelFunctions)), $modelContent);
@@ -282,8 +289,11 @@ class MageGen
         }
     }
 
-    private function buildInterfaceFunction($interfaceName, $fieldData, $replaceId = false)
-    {
+    private function buildInterfaceFunction(
+        $interfaceName,
+        $fieldData,
+        $replaceId = false
+    ) {
         if (!isset($this->interfaceFunctions[$interfaceName])) {
             $this->interfaceFunctions[$interfaceName] = [];
         }
@@ -302,7 +312,7 @@ class MageGen
         $keyName                   = strtoupper($itemName);
         $interfaceFunctionTemplate = $this->loadTemplate('InterfaceFunction');
         $argument                  = '$' . $this->convertToCamelCase($functionName, true);
-        $arguments                 =  $argument; // $fieldData['type'] . ' ' . $argument;
+        $arguments                 = $argument; // $fieldData['type'] . ' ' . $argument;
         $interfaceFunctionContent  = str_replace('{{RETURNS}}', $fieldData['type'], $interfaceFunctionTemplate);
         $interfaceFunctionContent  = str_replace('{{FUNCTION_NAME}}', $functionName, $interfaceFunctionContent);
         $interfaceFunctionContent  = str_replace(['{{ARGUMENTS}}', '{{PARAMS}}'], $arguments, $interfaceFunctionContent);
@@ -319,8 +329,12 @@ class MageGen
         }
     }
 
-    private function buildModelFunction($modelName, $interfaceName, $fieldData, $replaceId = false)
-    {
+    private function buildModelFunction(
+        $modelName,
+        $interfaceName,
+        $fieldData,
+        $replaceId = false
+    ) {
         if (!isset($this->modelFunctions[$modelName])) {
             $this->modelFunctions[$modelName] = [];
         }
@@ -356,6 +370,43 @@ class MageGen
             $newFunction[$functionName]       = $modelFunctionContent;
             $this->modelFunctions[$modelName] = array_merge($newFunction, $this->modelFunctions[$modelName]);
         }
+    }
+
+    private function buildResourceModel(
+        $modelName,
+        $primaryKeyName,
+        $tableName
+    ) {
+        $resourceModelNamespace = $this->vendor . '\\' . $this->moduleName . '\\' . str_replace('/', '\\', self::RESOURCE_MODEL_PATH);
+
+        $resourceModelPath = $this->destination . DIRECTORY_SEPARATOR . self::RESOURCE_MODEL_PATH . DIRECTORY_SEPARATOR . $modelName;
+        if (!file_exists($resourceModelPath)) {
+            mkdir($resourceModelPath);
+        }
+
+        $resourceModelTemplate           = $this->loadTemplate('ResourceModel');
+        $resourceModelCollectionTemplate = $this->loadTemplate('ResourceModelCollection');
+
+        $modelNamespace = $this->vendor . '\\' . $this->moduleName . '\\' . str_replace('/', '\\', self::MODEL_PATH);
+        $modelPath      = $modelNamespace . '\\' . $modelName;
+        $templateVars   = [
+            'MODEL'               => $modelName,
+            'MODEL_PATH'          => $modelPath,
+            'RESOURCE_MODEL_PATH' => $resourceModelNamespace . '\\' . $modelName,
+            'PRIMARY_KEY'         => $primaryKeyName,
+            'TABLE'               => $tableName
+        ];
+
+        foreach ($templateVars as $var => $value) {
+            $resourceModelTemplate           = str_replace('{{' . $var . '}}', $value, $resourceModelTemplate);
+            $resourceModelCollectionTemplate = str_replace('{{' . $var . '}}', $value, $resourceModelCollectionTemplate);
+        }
+
+        $resourceModelTemplate           = str_replace('{{NAMESPACE}}', $resourceModelNamespace, $resourceModelTemplate);
+        $resourceModelCollectionTemplate = str_replace('{{NAMESPACE}}', $resourceModelNamespace . '\\' . $modelName, $resourceModelCollectionTemplate);
+
+        file_put_contents($resourceModelPath . '.php', $resourceModelTemplate);
+        file_put_contents($resourceModelPath . DIRECTORY_SEPARATOR . 'Collection.php', $resourceModelCollectionTemplate);
     }
 
     private function convertToSnakeCase($variableName)
@@ -421,11 +472,9 @@ class MageGen
         $this->filePath = $filePath;
     }
 
-    public function readFile($file)
-    {
-
-    }
-
+    /**
+     * @return null|string
+     */
     public function getDestination()
     {
         return $this->destination;
