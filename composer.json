@@ -2,18 +2,10 @@
   "name": "ewan-tho/magegen",
   "description": "Magento 2 generators to speed up development",
   "author": "Ewan Thompson",
-  "version": "0.1",
+  "version": "0.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/ewan-tho/magegen"
   },
-  "repositories": [
-    { "type": "vcs", "url": "https://github.com/ewan-tho/mageinterfacegen" },
-    { "type": "vcs", "url": "https://github.com/ewan-tho/magedbgen" }
-  ],
-  "keywords": ["magento","magento2","php","scripts","automation"],
-  "require": {
-    "ewan-tho/magedbgen": "dev-master",
-    "ewan-tho/mageinterfacegen": "dev-master"
-  }
+  "keywords": ["magento","magento2","php","scripts","automation"]
 }

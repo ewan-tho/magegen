@@ -2,9 +2,6 @@
 
 namespace MageGen;
 
-use MageGen\DbGen;
-use MageGen\InterfaceGen;
-
 class MageGen
 {
     const TAB                 = '    ';
@@ -39,9 +36,6 @@ class MageGen
     /** @var DbGen */
     protected $dbGen;
 
-    /** @var InterfaceGen */
-    protected $interfaceGen;
-
     /**
      * MageGen constructor.
      *
@@ -72,7 +66,6 @@ class MageGen
         $this->vendor     = $vendor;
 
         $this->dbGen        = new DbGen();
-        $this->interfaceGen = new InterfaceGen();
     }
 
     /**
