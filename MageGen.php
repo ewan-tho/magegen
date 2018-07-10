@@ -302,7 +302,7 @@ class MageGen
         $keyName                   = strtoupper($itemName);
         $interfaceFunctionTemplate = $this->loadTemplate('InterfaceFunction');
         $argument                  = '$' . $this->convertToCamelCase($functionName, true);
-        $arguments                 = $fieldData['type'] . ' ' . $argument;
+        $arguments                 =  $argument; // $fieldData['type'] . ' ' . $argument;
         $interfaceFunctionContent  = str_replace('{{RETURNS}}', $fieldData['type'], $interfaceFunctionTemplate);
         $interfaceFunctionContent  = str_replace('{{FUNCTION_NAME}}', $functionName, $interfaceFunctionContent);
         $interfaceFunctionContent  = str_replace(['{{ARGUMENTS}}', '{{PARAMS}}'], $arguments, $interfaceFunctionContent);
@@ -339,7 +339,7 @@ class MageGen
         $keyName               = strtoupper($itemName);
         $modelFunctionTemplate = $this->loadTemplate('ModelFunction');
         $argument              = '$' . $this->convertToCamelCase($functionName, true);
-        $arguments             = $fieldData['type'] . ' ' . $argument;
+        $arguments             = $argument; //$fieldData['type'] . ' ' . $argument;
         $modelFunctionContent  = str_replace('{{RETURNS}}', $fieldData['type'], $modelFunctionTemplate);
         $modelFunctionContent  = str_replace('{{FUNCTION_NAME}}', $functionName, $modelFunctionContent);
         $modelFunctionContent  = str_replace(['{{ARGUMENTS}}', '{{PARAMS}}'], $arguments, $modelFunctionContent);

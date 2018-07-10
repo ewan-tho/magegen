@@ -9,7 +9,7 @@ use {{INTERFACE_PATH}};
  *
  * @package {{VENDOR}}\{{MODULE_NAME}}
  */
-class {{MODEL}} extends \Magento\Framework\DataObject implements {{INTERFACE_NAME}}
+class {{MODEL}} extends \Magento\Framework\Model\AbstractModel implements {{INTERFACE_NAME}}
 {
     {{FUNCTIONS}}
 }
