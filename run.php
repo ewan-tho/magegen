@@ -60,6 +60,8 @@ if (!empty($vendor)) {
     fclose($handle);
 }
 
+$destination = dirname(__FILE__) . DIRECTORY_SEPARATOR . $destination;
+
 try {
     $mageGen = new MageGen\MageGen($filePath, $vendor, $moduleName, $destination);
 } catch (Exception $e) {
@@ -86,3 +88,8 @@ try {
 }
 
 echo "Done.\n\n";
+echo "Generated:\n";
+echo "\tModels: " . $mageGen->getGeneratedCount('models') . "\n";
+echo "\tInterfaces: " . $mageGen->getGeneratedCount('interfaces') . "\n";
+echo "\tResource Models: " . $mageGen->getGeneratedCount('resource_models') . "\n";
+echo "\tRepositories: " . $mageGen->getGeneratedCount('repositories') . "\n";
