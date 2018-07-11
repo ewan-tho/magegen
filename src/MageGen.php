@@ -337,13 +337,14 @@ class MageGen
         $interfaceFunctionTemplateGet = $this->loadTemplate('InterfaceFunctionGet');
         $interfaceFunctionTemplateSet = $this->loadTemplate('InterfaceFunctionSet');
         $argument                     = '$' . $this->convertToCamelCase($functionName, true);
-        $arguments                    = $argument; // $fieldData['type'] . ' ' . $argument;
+        $arguments                    = $argument;
+        $params                       = $fieldData['type'] . ' ' . $argument;
 
         $templateVars = [
             'RETURNS'       => $fieldData['type'],
             'FUNCTION_NAME' => $functionName,
             'ARGUMENTS'     => $arguments,
-            'PARAMS'        => $arguments
+            'PARAMS'        => $params
         ];
 
         $interfaceFunctionContent = $this->applyTemplate($templateVars, $interfaceFunctionTemplateGet);
@@ -399,13 +400,14 @@ class MageGen
         $modelFunctionTemplateGet = $this->loadTemplate('ModelFunctionGet');
         $modelFunctionTemplateSet = $this->loadTemplate('ModelFunctionSet');
         $argument                 = '$' . $this->convertToCamelCase($functionName, true);
-        $arguments                = $argument; //$fieldData['type'] . ' ' . $argument;
+        $arguments                = $argument;
+        $params                   = $fieldData['type'] . ' ' . $argument;
 
         $templateVars = [
             'RETURNS'       => $fieldData['type'],
             'FUNCTION_NAME' => $functionName,
             'ARGUMENTS'     => $arguments,
-            'PARAMS'        => $arguments,
+            'PARAMS'        => $params,
             'KEY_NAME'      => $keyName,
             'ARGUMENT'      => $argument
         ];
@@ -580,6 +582,7 @@ class MageGen
         $fileName = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . $template . '.template';
         if (file_exists($fileName)) {
             $templateData = file_get_contents($fileName);
+
             return trim($templateData, "\n") . "\n";
         } else {
             throw new \Exception('Template ' . $template . ' not found (' . $fileName . ')');
