@@ -1,7 +1,3 @@
-    /**
-     * @return {{RETURNS}}
-     */
-    public function get{{FUNCTION_NAME}}();
 
     /**
      * @param {{PARAMS}}
