@@ -16,5 +16,5 @@ class {{MODEL}} extends \Magento\Framework\Model\AbstractModel implements {{INTE
         $this->_init({{RESOURCE_MODEL}}::class);
     }
 
-    {{FUNCTIONS}}
+{{FUNCTIONS}}
 }

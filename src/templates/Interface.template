@@ -9,7 +9,7 @@ namespace {{NAMESPACE}};
  */
 interface {{INTERFACE_NAME}} extends \Magento\Framework\Api\ExtensibleDataInterface
 {
-    {{CONSTANTS}}
+{{CONSTANTS}}
 
-    {{FUNCTIONS}}
+{{FUNCTIONS}}
 }

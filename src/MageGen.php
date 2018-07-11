@@ -278,8 +278,8 @@ class MageGen
                 }
             }
             $interfaceContent = str_replace('{{INTERFACE_NAME}}', $interfaceName, $interfaceTemplate);
-            $interfaceContent = str_replace('{{CONSTANTS}}', trim(implode("\n" . str_repeat(self::TAB, 1), $constants)), $interfaceContent);
-            $interfaceContent = str_replace('{{FUNCTIONS}}', trim(implode("\n" . str_repeat(self::TAB, 1), $interfaceFunctions)), $interfaceContent);
+            $interfaceContent = str_replace('{{CONSTANTS}}', self::TAB . trim(implode("\n" . str_repeat(self::TAB, 1), $constants)), $interfaceContent);
+            $interfaceContent = str_replace('{{FUNCTIONS}}', implode("\n", $interfaceFunctions), $interfaceContent);
             $interfaceFile    = $this->destination . DIRECTORY_SEPARATOR . self::INTERFACE_PATH . DIRECTORY_SEPARATOR . $interfaceName . '.php';
             file_put_contents($interfaceFile, $interfaceContent);
             $this->generatedCount['interfaces']++;
@@ -297,7 +297,7 @@ class MageGen
             $modelContent  = str_replace('{{RESOURCE_MODEL}}', $resourceModel . $modelName, $modelContent);
             $modelContent  = str_replace('{{INTERFACE_NAME}}', $interfaceName, $modelContent);
             $modelContent  = str_replace('{{INTERFACE_PATH}}', $interfaceNamespace . '\\' . $interfaceName, $modelContent);
-            $modelContent  = str_replace('{{FUNCTIONS}}', trim(implode("\n" . str_repeat(self::TAB, 1), $modelFunctions)), $modelContent);
+            $modelContent  = str_replace('{{FUNCTIONS}}', implode("\n", $modelFunctions), $modelContent);
             $modelFile     = $this->destination . DIRECTORY_SEPARATOR . self::MODEL_PATH . DIRECTORY_SEPARATOR . $modelName . '.php';
             file_put_contents($modelFile, $modelContent);
             $this->generatedCount['models']++;
@@ -308,6 +308,8 @@ class MageGen
      * @param      $interfaceName
      * @param      $fieldData
      * @param bool $replaceId
+     *
+     * @throws \Exception
      */
     private function buildInterfaceFunction(
         $interfaceName,
@@ -331,13 +333,24 @@ class MageGen
         }
         $itemName = $this->convertToSnakeCase($this->filterName($fieldData['field']));
 
-        $keyName                   = strtoupper($itemName);
-        $interfaceFunctionTemplate = $this->loadTemplate('InterfaceFunction');
-        $argument                  = '$' . $this->convertToCamelCase($functionName, true);
-        $arguments                 = $argument; // $fieldData['type'] . ' ' . $argument;
-        $interfaceFunctionContent  = str_replace('{{RETURNS}}', $fieldData['type'], $interfaceFunctionTemplate);
-        $interfaceFunctionContent  = str_replace('{{FUNCTION_NAME}}', $functionName, $interfaceFunctionContent);
-        $interfaceFunctionContent  = str_replace(['{{ARGUMENTS}}', '{{PARAMS}}'], $arguments, $interfaceFunctionContent);
+        $keyName                      = strtoupper($itemName);
+        $interfaceFunctionTemplateGet = $this->loadTemplate('InterfaceFunctionGet');
+        $interfaceFunctionTemplateSet = $this->loadTemplate('InterfaceFunctionSet');
+        $argument                     = '$' . $this->convertToCamelCase($functionName, true);
+        $arguments                    = $argument; // $fieldData['type'] . ' ' . $argument;
+
+        $templateVars = [
+            'RETURNS'       => $fieldData['type'],
+            'FUNCTION_NAME' => $functionName,
+            'ARGUMENTS'     => $arguments,
+            'PARAMS'        => $arguments
+        ];
+
+        $interfaceFunctionContent = $this->applyTemplate($templateVars, $interfaceFunctionTemplateGet);
+        if (!$replaceId && empty($fieldData['primary'])) {
+            $interfaceFunctionContent .= "\n" . $this->applyTemplate($templateVars, $interfaceFunctionTemplateSet);
+        }
+
 
         if (!$replaceId) {
             $this->interfaceConstants[$interfaceName][]              = [$keyName => $itemName];
@@ -356,6 +369,8 @@ class MageGen
      * @param      $interfaceName
      * @param      $fieldData
      * @param bool $replaceId
+     *
+     * @throws \Exception
      */
     private function buildModelFunction(
         $modelName,
@@ -379,16 +394,26 @@ class MageGen
             $functionName = 'Id';
         }
 
-        $itemName              = $this->convertToSnakeCase($this->filterName($fieldData['field']));
-        $keyName               = strtoupper($itemName);
-        $modelFunctionTemplate = $this->loadTemplate('ModelFunction');
-        $argument              = '$' . $this->convertToCamelCase($functionName, true);
-        $arguments             = $argument; //$fieldData['type'] . ' ' . $argument;
-        $modelFunctionContent  = str_replace('{{RETURNS}}', $fieldData['type'], $modelFunctionTemplate);
-        $modelFunctionContent  = str_replace('{{FUNCTION_NAME}}', $functionName, $modelFunctionContent);
-        $modelFunctionContent  = str_replace(['{{ARGUMENTS}}', '{{PARAMS}}'], $arguments, $modelFunctionContent);
-        $modelFunctionContent  = str_replace('{{KEY_NAME}}', $keyName, $modelFunctionContent);
-        $modelFunctionContent  = str_replace('{{ARGUMENT}}', $argument, $modelFunctionContent);
+        $itemName                 = $this->convertToSnakeCase($this->filterName($fieldData['field']));
+        $keyName                  = strtoupper($itemName);
+        $modelFunctionTemplateGet = $this->loadTemplate('ModelFunctionGet');
+        $modelFunctionTemplateSet = $this->loadTemplate('ModelFunctionSet');
+        $argument                 = '$' . $this->convertToCamelCase($functionName, true);
+        $arguments                = $argument; //$fieldData['type'] . ' ' . $argument;
+
+        $templateVars = [
+            'RETURNS'       => $fieldData['type'],
+            'FUNCTION_NAME' => $functionName,
+            'ARGUMENTS'     => $arguments,
+            'PARAMS'        => $arguments,
+            'KEY_NAME'      => $keyName,
+            'ARGUMENT'      => $argument
+        ];
+
+        $modelFunctionContent = $this->applyTemplate($templateVars, $modelFunctionTemplateGet);
+        if (!$replaceId && empty($fieldData['primary'])) {
+            $modelFunctionContent .= "\n" . $this->applyTemplate($templateVars, $modelFunctionTemplateSet);
+        }
 
         if (!$replaceId) {
             $this->modelFunctions[$modelName][$functionName] = $modelFunctionContent;
@@ -555,8 +580,7 @@ class MageGen
         $fileName = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . $template . '.template';
         if (file_exists($fileName)) {
             $templateData = file_get_contents($fileName);
-
-            return trim($templateData) . "\n";
+            return trim($templateData, "\n") . "\n";
         } else {
             throw new \Exception('Template ' . $template . ' not found (' . $fileName . ')');
         }
