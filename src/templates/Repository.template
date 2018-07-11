@@ -4,6 +4,7 @@ namespace {{REPOSITORY_NAMESPACE}};
 
 use Magento\Framework\Exception\NotFoundException;
 use {{REPOSITORY_INTERFACE_PATH}};
+use {{MODEL_PATH}}Factory;
 use {{INTERFACE_PATH}};
 use {{INTERFACE_PATH}}Factory;
 use {{RESOURCE_MODEL_PATH}} as {{MODEL_NAME}}ResourceModel;
@@ -28,6 +29,11 @@ class {{REPOSITORY_NAME}} implements {{REPOSITORY_INTERFACE_NAME}}
     protected ${{MODEL_NAME_LC}}CollectionFactory;
 
     /**
+     * @var {{MODEL_NAME}}Factory
+     */
+    protected ${{MODEL_NAME_LC}}Factory;
+
+    /**
      * @var {{INTERFACE_NAME}}Factory
      */
     protected ${{MODEL_NAME_LC}}InterfaceFactory;
@@ -38,17 +44,20 @@ class {{REPOSITORY_NAME}} implements {{REPOSITORY_INTERFACE_NAME}}
      * @param {{MODEL_NAME}}ResourceModel {{ARGUMENT}}ResourceModel
      * @param {{MODEL_NAME}}Collection {{ARGUMENT}}Collection
      * @param {{MODEL_NAME}}CollectionFactory {{ARGUMENT}}CollectionFactory
+     * @param {{MODEL_NAME}}Factory {{ARGUMENT}}Factory
      * @param {{INTERFACE_NAME}}Factory {{ARGUMENT}}InterfaceFactory
      */
     public function __construct(
         {{MODEL_NAME}}ResourceModel {{ARGUMENT}}ResourceModel,
         {{MODEL_NAME}}Collection {{ARGUMENT}}Collection,
         {{MODEL_NAME}}CollectionFactory {{ARGUMENT}}CollectionFactory,
+        {{MODEL_NAME}}Factory {{ARGUMENT}}Factory,
         {{INTERFACE_NAME}}Factory {{ARGUMENT}}InterfaceFactory
     ) {
         $this->{{MODEL_NAME_LC}}ResourceModel = {{ARGUMENT}}ResourceModel;
         $this->{{MODEL_NAME_LC}}Collection = {{ARGUMENT}}Collection;
         $this->{{MODEL_NAME_LC}}CollectionFactory = {{ARGUMENT}}CollectionFactory;
+        $this->{{MODEL_NAME_LC}}Factory = {{ARGUMENT}}Factory;
         $this->{{MODEL_NAME_LC}}InterfaceFactory = {{ARGUMENT}}InterfaceFactory;
     }
 
@@ -89,6 +98,9 @@ class {{REPOSITORY_NAME}} implements {{REPOSITORY_INTERFACE_NAME}}
     public function save({{INTERFACE_NAME}} {{ARGUMENT}})
     {
         /** @var \{{MODEL_PATH}} {{ARGUMENT}} */
+        if (!{{ARGUMENT}}->getId()) {
+            {{ARGUMENT}} = $this->{{MODEL_NAME_LC}}Factory->create();
+        }
         {{ARGUMENT}}->setUpdatedAt((new \DateTime())->format(\Magento\Framework\Stdlib\DateTime::DATETIME_PHP_FORMAT));
         if (!{{ARGUMENT}}->getCreatedAt()) {
             {{ARGUMENT}}->setCreatedAt({{ARGUMENT}}->getUpdatedAt());
