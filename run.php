@@ -1,10 +1,7 @@
 <?php
 
-
-// @todo: put these into proper packages and use composer
-
-require('DbGen.php');
-require('MageGen.php');
+require('src/DbGen.php');
+require('src/MageGen.php');
 
 if (php_sapi_name() != 'cli') {
     die("This is only supported from the command-line.\n");
