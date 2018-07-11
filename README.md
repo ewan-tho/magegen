@@ -8,6 +8,8 @@ Magento 2 generators to speed up development
 2. Interface models for each table.
 3. Domain models for each table.
 4. Resource models for each table.
+5. Repository interfaces for all models.
+6. Repositories for each repository interface.
 
 These files will be generated using a fairly vanilla directory structure under the `./generated` directory relative to where the script is run from.
 
