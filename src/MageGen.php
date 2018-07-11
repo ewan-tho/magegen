@@ -4,11 +4,20 @@ namespace MageGen;
 
 class MageGen
 {
-    const TAB                 = '    ';
-    const INSTALL_SCHEMA_PATH = 'Setup';
-    const INTERFACE_PATH      = 'Api/Data';
-    const MODEL_PATH          = 'Model';
-    const RESOURCE_MODEL_PATH = 'Model/ResourceModel';
+    const TAB                       = '    ';
+    const INSTALL_SCHEMA_PATH       = 'Setup';
+    const INTERFACE_PATH            = 'Api/Data';
+    const REPOSITORY_INTERFACE_PATH = 'Api';
+    const MODEL_PATH                = 'Model';
+    const REPOSITORY_PATH           = 'Model';
+    const RESOURCE_MODEL_PATH       = 'Model/ResourceModel';
+
+    protected $generatedCount = [
+        'models'          => 0,
+        'interfaces'      => 0,
+        'repositories'    => 0,
+        'resource_models' => 0,
+    ];
 
     protected $filePath;
 
@@ -155,7 +164,8 @@ class MageGen
             explode(DIRECTORY_SEPARATOR, $this->destination . DIRECTORY_SEPARATOR . self::RESOURCE_MODEL_PATH),
         ];
         foreach ($paths as $path) {
-            $fullPath = '.';
+            $fullPath = '';
+            $path     = array_filter($path);
             foreach ($path as $item) {
                 $fullPath .= DIRECTORY_SEPARATOR . $item;
                 if (!file_exists($fullPath)) {
@@ -204,6 +214,8 @@ class MageGen
 
     /**
      * @param string[[]] $tables
+     *
+     * @throws \Exception
      */
     private function buildInterfacesAndModels($tables)
     {
@@ -240,7 +252,8 @@ class MageGen
                 }
             }
 
-            $this->buildResourceModel($modelName, empty($primaryKey) ? 'id' : $primaryKey['field'], $table['table']);
+            $this->buildResourceModelAndFile($modelName, empty($primaryKey) ? 'id' : $primaryKey['field'], $table['table']);
+            $this->buildRepositoryAndFiles($modelName, $table['table']);
         }
 
         return true;
@@ -269,6 +282,7 @@ class MageGen
             $interfaceContent = str_replace('{{FUNCTIONS}}', trim(implode("\n" . str_repeat(self::TAB, 1), $interfaceFunctions)), $interfaceContent);
             $interfaceFile    = $this->destination . DIRECTORY_SEPARATOR . self::INTERFACE_PATH . DIRECTORY_SEPARATOR . $interfaceName . '.php';
             file_put_contents($interfaceFile, $interfaceContent);
+            $this->generatedCount['interfaces']++;
         }
 
         $modelTemplate = $this->loadTemplate('Model');
@@ -286,14 +300,22 @@ class MageGen
             $modelContent  = str_replace('{{FUNCTIONS}}', trim(implode("\n" . str_repeat(self::TAB, 1), $modelFunctions)), $modelContent);
             $modelFile     = $this->destination . DIRECTORY_SEPARATOR . self::MODEL_PATH . DIRECTORY_SEPARATOR . $modelName . '.php';
             file_put_contents($modelFile, $modelContent);
+            $this->generatedCount['models']++;
         }
     }
 
+    /**
+     * @param      $interfaceName
+     * @param      $fieldData
+     * @param bool $replaceId
+     */
     private function buildInterfaceFunction(
         $interfaceName,
         $fieldData,
         $replaceId = false
     ) {
+        $interfaceName = $this->convertToCamelCase($interfaceName);
+
         if (!isset($this->interfaceFunctions[$interfaceName])) {
             $this->interfaceFunctions[$interfaceName] = [];
         }
@@ -329,12 +351,20 @@ class MageGen
         }
     }
 
+    /**
+     * @param      $modelName
+     * @param      $interfaceName
+     * @param      $fieldData
+     * @param bool $replaceId
+     */
     private function buildModelFunction(
         $modelName,
         $interfaceName,
         $fieldData,
         $replaceId = false
     ) {
+        $modelName = $this->convertToCamelCase($modelName);
+
         if (!isset($this->modelFunctions[$modelName])) {
             $this->modelFunctions[$modelName] = [];
         }
@@ -372,11 +402,20 @@ class MageGen
         }
     }
 
-    private function buildResourceModel(
+    /**
+     * @param $modelName
+     * @param $primaryKeyName
+     * @param $tableName
+     *
+     * @throws \Exception
+     */
+    private function buildResourceModelAndFile(
         $modelName,
         $primaryKeyName,
         $tableName
     ) {
+        $modelName = $this->convertToCamelCase($modelName);
+
         $resourceModelNamespace = $this->vendor . '\\' . $this->moduleName . '\\' . str_replace('/', '\\', self::RESOURCE_MODEL_PATH);
 
         $resourceModelPath = $this->destination . DIRECTORY_SEPARATOR . self::RESOURCE_MODEL_PATH . DIRECTORY_SEPARATOR . $modelName;
@@ -397,16 +436,59 @@ class MageGen
             'TABLE'               => $tableName
         ];
 
-        foreach ($templateVars as $var => $value) {
-            $resourceModelTemplate           = str_replace('{{' . $var . '}}', $value, $resourceModelTemplate);
-            $resourceModelCollectionTemplate = str_replace('{{' . $var . '}}', $value, $resourceModelCollectionTemplate);
-        }
+        $resourceModelTemplate           = $this->applyTemplate(array_merge($templateVars, ['NAMESPACE' => $resourceModelNamespace]), $resourceModelTemplate);
+        $resourceModelCollectionTemplate = $this->applyTemplate(array_merge($templateVars, ['NAMESPACE' => $resourceModelNamespace . '\\' . $modelName]), $resourceModelCollectionTemplate);
 
-        $resourceModelTemplate           = str_replace('{{NAMESPACE}}', $resourceModelNamespace, $resourceModelTemplate);
-        $resourceModelCollectionTemplate = str_replace('{{NAMESPACE}}', $resourceModelNamespace . '\\' . $modelName, $resourceModelCollectionTemplate);
+        $this->generatedCount['resource_models']++;
 
         file_put_contents($resourceModelPath . '.php', $resourceModelTemplate);
         file_put_contents($resourceModelPath . DIRECTORY_SEPARATOR . 'Collection.php', $resourceModelCollectionTemplate);
+    }
+
+    /**
+     * @param string   $modelName
+     * @param string[] $table
+     *
+     * @throws \Exception
+     */
+    private function buildRepositoryAndFiles(
+        $modelName,
+        $table
+    ) {
+        $modelName                    = $this->convertToCamelCase($modelName);
+        $repositoryName               = $modelName . 'Repository';
+        $repositoryInterfaceName      = $modelName . 'RepositoryInterface';
+        $interfaceName                = $modelName . 'Interface';
+        $interfaceNamespace           = $this->vendor . '\\' . $this->moduleName . '\\' . str_replace('/', '\\', self::INTERFACE_PATH);
+        $repositoryNamespace          = $this->vendor . '\\' . $this->moduleName . '\\' . str_replace('/', '\\', self::REPOSITORY_PATH);
+        $repositoryInterfaceNamespace = $this->vendor . '\\' . $this->moduleName . '\\' . str_replace('/', '\\', self::REPOSITORY_INTERFACE_PATH);
+        $modelPath                    = $this->vendor . '\\' . $this->moduleName . '\\' . str_replace('/', '\\', self::MODEL_PATH);
+        $repositoryFile               = $this->destination . DIRECTORY_SEPARATOR . self::REPOSITORY_PATH . DIRECTORY_SEPARATOR . $repositoryName . '.php';
+        $repositoryInterfaceFile      = $this->destination . DIRECTORY_SEPARATOR . self::REPOSITORY_INTERFACE_PATH . DIRECTORY_SEPARATOR . $repositoryInterfaceName . '.php';
+        $resourceModelNamespace       = $this->vendor . '\\' . $this->moduleName . '\\' . str_replace('/', '\\', self::RESOURCE_MODEL_PATH);
+
+        $templateVars = [
+            'INTERFACE_PATH'                 => $interfaceNamespace . '\\' . $interfaceName,
+            'INTERFACE_NAME'                 => $interfaceName,
+            'REPOSITORY_NAME'                => $repositoryName,
+            'REPOSITORY_NAMESPACE'           => $repositoryNamespace,
+            'REPOSITORY_INTERFACE_NAME'      => $repositoryInterfaceName,
+            'REPOSITORY_INTERFACE_PATH'      => $repositoryInterfaceNamespace . '\\' . $repositoryInterfaceName,
+            'REPOSITORY_INTERFACE_NAMESPACE' => $repositoryInterfaceNamespace,
+            'ARGUMENT'                       => '$' . $this->convertToCamelCase($modelName, true),
+            'MODEL_NAME'                     => $modelName,
+            'MODEL_NAME_LC'                  => $this->convertToCamelCase($modelName, true),
+            'MODEL_PATH'                     => $modelPath . '\\' . $modelName,
+            'RESOURCE_MODEL_PATH'            => $resourceModelNamespace . '\\' . $modelName
+        ];
+
+        $repositoryTemplate          = $this->applyTemplate($templateVars, $this->loadTemplate('Repository'));
+        $repositoryInterfaceTemplate = $this->applyTemplate($templateVars, $this->loadTemplate('RepositoryInterface'));
+
+        file_put_contents($repositoryFile, $repositoryTemplate);
+        file_put_contents($repositoryInterfaceFile, $repositoryInterfaceTemplate);
+
+        $this->generatedCount['repositories']++;
     }
 
     private function convertToSnakeCase($variableName)
@@ -445,21 +527,45 @@ class MageGen
     }
 
     /**
+     * @param string[] $templateVars
+     * @param string   $templateData
+     *
+     * @return string
+     */
+    private function applyTemplate(
+        $templateVars,
+        $templateData
+    ) {
+        foreach ($templateVars as $var => $value) {
+            $templateData = str_replace('{{' . $var . '}}', $value, $templateData);
+        }
+
+        return $templateData;
+    }
+
+    /**
      * @param string $template
      *
      * @return bool|null|string
+     * @throws \Exception
      */
     private function loadTemplate($template)
     {
         $template = str_replace([DIRECTORY_SEPARATOR, '/', '\\', '.'], '', $template);
-        $fileName = '.' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . $template . '.template';
+        $fileName = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . $template . '.template';
         if (file_exists($fileName)) {
             $templateData = file_get_contents($fileName);
 
             return trim($templateData) . "\n";
+        } else {
+            throw new \Exception('Template ' . $template . ' not found (' . $fileName . ')');
         }
+    }
 
-        return null;
+    private function writeFile($path, $content)
+    {
+        echo "Writing to $path\n";
+        file_put_contents($path, $content);
     }
 
     /**
@@ -478,5 +584,15 @@ class MageGen
     public function getDestination()
     {
         return $this->destination;
+    }
+
+    /**
+     * @param $countType
+     *
+     * @return int
+     */
+    public function getGeneratedCount($countType)
+    {
+        return empty($this->generatedCount[$countType]) ? 0 : $this->generatedCount[$countType];
     }
 }
