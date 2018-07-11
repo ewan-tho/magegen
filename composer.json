@@ -2,7 +2,7 @@
   "name": "ewth/magegen",
   "description": "Magento 2 generators to speed up development",
   "author": "Ewan Thompson",
-  "version": "0.2",
+  "version": "0.4",
   "repository": {
     "type": "git",
     "url": "https://github.com/ewth/magegen"
