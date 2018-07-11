@@ -1,0 +1,45 @@
+<?php
+
+namespace {{REPOSITORY_INTERFACE_NAMESPACE}};
+
+use {{INTERFACE_PATH}};
+use Magento\Framework\Api\SearchCriteriaInterface;
+
+interface {{REPOSITORY_INTERFACE_NAME}}
+{
+    /**
+     * @param int $id
+     *
+     * @return {{INTERFACE_NAME}}
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
+    public function get($id);
+
+    /**
+     * @param \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria
+     *
+     * @return {{INTERFACE_NAME}}
+     */
+    // @todo: public function getList(SearchCriteriaInterface $searchCriteria);
+
+    /**
+     * @param {{INTERFACE_NAME}} {{ARGUMENT}}
+     *
+     * @return {{INTERFACE_NAME}}
+     */
+    public function save({{INTERFACE_NAME}} {{ARGUMENT}});
+
+    /**
+     * @param {{INTERFACE_NAME}} {{ARGUMENT}}
+     *
+     * @return bool
+     */
+    public function delete({{INTERFACE_NAME}} {{ARGUMENT}});
+
+    /**
+     * @param int $id
+     *
+     * @return bool
+     */
+    public function deleteById($id);
+}

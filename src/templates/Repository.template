@@ -1,0 +1,123 @@
+<?php
+
+namespace {{REPOSITORY_NAMESPACE}};
+
+use Magento\Framework\Exception\NotFoundException;
+use {{REPOSITORY_INTERFACE_PATH}};
+use {{INTERFACE_PATH}};
+use {{INTERFACE_PATH}}Factory;
+use {{RESOURCE_MODEL_PATH}} as {{MODEL_NAME}}ResourceModel;
+use {{RESOURCE_MODEL_PATH}}\Collection as {{MODEL_NAME}}Collection;
+use {{RESOURCE_MODEL_PATH}}\CollectionFactory as {{MODEL_NAME}}CollectionFactory;
+
+class {{REPOSITORY_NAME}} implements {{REPOSITORY_INTERFACE_NAME}}
+{
+    /**
+     * @var {{MODEL_NAME}}ResourceModel
+     */
+    protected ${{MODEL_NAME_LC}}ResourceModel;
+
+    /**
+     * @var {{MODEL_NAME}}Collection
+     */
+    protected ${{MODEL_NAME_LC}}Collection;
+
+    /**
+     * @var {{MODEL_NAME}}CollectionFactory
+     */
+    protected ${{MODEL_NAME_LC}}CollectionFactory;
+
+    /**
+     * @var {{INTERFACE_NAME}}Factory
+     */
+    protected ${{MODEL_NAME_LC}}InterfaceFactory;
+
+    /**
+     * {{REPOSITORY_NAME}} constructor.
+     *
+     * @param {{MODEL_NAME}}ResourceModel {{ARGUMENT}}ResourceModel
+     * @param {{MODEL_NAME}}Collection {{ARGUMENT}}Collection
+     * @param {{MODEL_NAME}}CollectionFactory {{ARGUMENT}}CollectionFactory
+     * @param {{INTERFACE_NAME}}Factory {{ARGUMENT}}InterfaceFactory
+     */
+    public function __construct(
+        {{MODEL_NAME}}ResourceModel {{ARGUMENT}}ResourceModel,
+        {{MODEL_NAME}}Collection {{ARGUMENT}}Collection,
+        {{MODEL_NAME}}CollectionFactory {{ARGUMENT}}CollectionFactory,
+        {{INTERFACE_NAME}}Factory {{ARGUMENT}}InterfaceFactory
+    ) {
+        $this->{{MODEL_NAME_LC}}ResourceModel = {{ARGUMENT}}ResourceModel;
+        $this->{{MODEL_NAME_LC}}Collection = {{ARGUMENT}}Collection;
+        $this->{{MODEL_NAME_LC}}CollectionFactory = {{ARGUMENT}}CollectionFactory;
+        $this->{{MODEL_NAME_LC}}InterfaceFactory = {{ARGUMENT}}InterfaceFactory;
+    }
+
+    /**
+     * @param int $id
+     *
+     * @return {{INTERFACE_NAME}}
+     * @throws \Magento\Framework\Exception\NotFoundException
+     */
+    public function get($id)
+    {
+        /** @var \{{MODEL_PATH}} {{ARGUMENT}} */
+        {{ARGUMENT}} = $this->{{MODEL_NAME_LC}}InterfaceFactory->create();
+        $this->{{MODEL_NAME_LC}}ResourceModel->load({{ARGUMENT}}, $id);
+        if (!{{ARGUMENT}}->getId()) {
+            throw new NotFoundException(__('{{MODEL_NAME}} not found'));
+        }
+        return {{ARGUMENT}};
+    }
+
+    /**
+     * @param $id
+     *
+     * @return {{INTERFACE_NAME}}
+     * @throws \Magento\Framework\Exception\NotFoundException
+     */
+    public function getById($id)
+    {
+        return $this->get($id);
+    }
+
+    /**
+     * @param {{INTERFACE_NAME}} {{ARGUMENT}}
+     *
+     * @return {{INTERFACE_NAME}}
+     * @throws \Exception
+     */
+    public function save({{INTERFACE_NAME}} {{ARGUMENT}})
+    {
+        /** @var \{{MODEL_PATH}} {{ARGUMENT}} */
+        {{ARGUMENT}}->setUpdatedAt((new \DateTime())->format(\Magento\Framework\Stdlib\DateTime::DATETIME_PHP_FORMAT));
+        if (!{{ARGUMENT}}->getCreatedAt()) {
+            {{ARGUMENT}}->setCreatedAt({{ARGUMENT}}->getUpdatedAt());
+        }
+        $this->{{MODEL_NAME_LC}}ResourceModel->save({{ARGUMENT}});
+        return {{ARGUMENT}};
+    }
+
+    /**
+     * @param {{INTERFACE_NAME}} {{ARGUMENT}}}
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    public function delete({{INTERFACE_NAME}} {{ARGUMENT}})
+    {
+        /** @var \{{MODEL_PATH}} {{ARGUMENT}} */
+        $this->{{MODEL_NAME_LC}}ResourceModel->delete({{ARGUMENT}});
+        return true;
+    }
+
+    /**
+     * @param int $id
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    public function deleteById($id)
+    {
+        return $this->delete($this->get($id));
+    }
+}
