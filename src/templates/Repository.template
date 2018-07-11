@@ -98,7 +98,7 @@ class {{REPOSITORY_NAME}} implements {{REPOSITORY_INTERFACE_NAME}}
     }
 
     /**
-     * @param {{INTERFACE_NAME}} {{ARGUMENT}}}
+     * @param {{INTERFACE_NAME}} {{ARGUMENT}}
      *
      * @return bool
      * @throws \Exception
