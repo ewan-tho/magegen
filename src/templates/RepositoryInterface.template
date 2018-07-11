@@ -16,6 +16,14 @@ interface {{REPOSITORY_INTERFACE_NAME}}
     public function get($id);
 
     /**
+     * @param int $id
+     *
+     * @return {{INTERFACE_NAME}}
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
+    public function getById($id);
+
+    /**
      * @param \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria
      *
      * @return {{INTERFACE_NAME}}
