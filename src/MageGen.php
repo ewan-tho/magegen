@@ -60,20 +60,21 @@ class MageGen
         $filePath = null,
         $vendor = null,
         $moduleName = null,
-        $destination = null
+        $destination = null,
+        $forceDestination = false
     ) {
+        if (!empty($destination)) {
+            $this->destination = $destination;
+        }
+        $this->forceDestination = $forceDestination;
+
+        $this->moduleName = $moduleName;
+        $this->vendor     = $vendor;
+
         if ($filePath) {
             $this->setFilePath($filePath);
             $this->setup();
         }
-
-        if (!empty($destination)) {
-            $this->destination      = $destination;
-            $this->forceDestination = true;
-        }
-
-        $this->moduleName = $moduleName;
-        $this->vendor     = $vendor;
 
         $this->dbGen = new DbGen();
     }
@@ -126,17 +127,19 @@ class MageGen
      */
     private function setupDestination()
     {
-        if (!empty($this->destination)) {
-            if (!file_exists($this->destination)) {
-                throw new \Exception('Destination specified does not exist or is inaccessible.');
-            }
-
+        $this->destination = str_replace('..','', $this->destination);
+        while (strpos($this->destination, '//') !== false) {
+            $this->destination = str_replace('//', '/', $this->destination);
+        }
+        if ($this->forceDestination) {
             return;
         }
         $counter = 0;
+        $destinationPrefix = $this->destination;
+        $this->destination = '';
         while (empty($this->destination) || file_exists($this->destination)) {
-            $directoryName     = date('Y-m-d_His') . ($counter ? $counter : '');
-            $this->destination = '.' . DIRECTORY_SEPARATOR . 'generated' . DIRECTORY_SEPARATOR . $directoryName;
+            $directoryName     = date('Y-m-d_H-i-s') . ($counter ? '-' . $counter : '');
+            $this->destination = $destinationPrefix . DIRECTORY_SEPARATOR . $directoryName;
             $counter++;
         }
     }
@@ -150,11 +153,6 @@ class MageGen
     {
         if (empty($this->destination)) {
             throw new \Exception('No destination set.');
-        }
-        if (file_exists($this->destination)) {
-            if (!$this->forceDestination) {
-                throw new \Exception('Destination ' . $this->destination . ' already exists.');
-            }
         }
         $paths = [
             explode(DIRECTORY_SEPARATOR, $this->destination),

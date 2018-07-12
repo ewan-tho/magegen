@@ -7,9 +7,10 @@ if (php_sapi_name() != 'cli') {
     die("This is only supported from the command-line.\n");
 }
 
-$moduleName = $vendor = $destination = null;
+$moduleName = $vendor = null;
+$destination = 'generated';
 
-$skipConfirmation = false;
+$skipConfirmation = $forceDestination = false ;
 
 if (count($argv) > 2) {
     $arguments = array_slice($argv, 2);
@@ -28,6 +29,7 @@ if (count($argv) > 2) {
         }
         if (preg_match('#\-\-destination\=(.+)#i', $argument, $match)) {
             $destination = $match[1];
+            $forceDestination = true;
         }
     }
 }
@@ -63,7 +65,7 @@ if (!empty($vendor)) {
 $destination = dirname(__FILE__) . DIRECTORY_SEPARATOR . $destination;
 
 try {
-    $mageGen = new MageGen\MageGen($filePath, $vendor, $moduleName, $destination);
+    $mageGen = new MageGen\MageGen($filePath, $vendor, $moduleName, $destination, $forceDestination);
 } catch (Exception $e) {
     die("[Failed] " . $e->getMessage() . "\n");
 }
