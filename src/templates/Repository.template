@@ -99,7 +99,7 @@ class {{REPOSITORY_NAME}} implements {{REPOSITORY_INTERFACE_NAME}}
     {
         /** @var \{{MODEL_PATH}} {{ARGUMENT}} */
         if (!{{ARGUMENT}}->getId()) {
-            {{ARGUMENT}} = $this->{{MODEL_NAME_LC}}Factory->create();
+            {{ARGUMENT}} = $this->{{MODEL_NAME_LC}}Factory->create(['data' => {{ARGUMENT}}->getData()]);
         }
         {{ARGUMENT}}->setUpdatedAt((new \DateTime())->format(\Magento\Framework\Stdlib\DateTime::DATETIME_PHP_FORMAT));
         if (!{{ARGUMENT}}->getCreatedAt()) {
